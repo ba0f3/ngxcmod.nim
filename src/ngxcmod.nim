@@ -2,12 +2,8 @@
 ##
 ## For low level wrapper, please import ``ngxcmod/raw``
 
-
-
 import ngxcmod/raw
-
 export Context
-
 
 
 const
@@ -65,4 +61,16 @@ template getQueryParam*(ctx: Context, key: string): string =
 template response*(ctx: Context, statusCode: int, statusLine: string, contentType: string, content: string) =
   ## Write response to client
   raw.write_resp(ctx, statusCode, statusLine, contentType, content, content.len)
+
+template cacheGet(sharedMem: pointer, key: string): pointer =
+  apit.cache_get(sharedName, key)
+
+template cachePut(sharedMem: pointer, key: string, value: pointer): pointer =
+  apit.cache_put(sharedName, key, value)
+
+template cacheNew(sharedMem: pointer, key: string, size: int): pointer =
+  apit.cache_new(sharedName, key, size)
+
+template cacheRemove(sharedMem: pointer, key: string, size: int): pointer =
+  apit.cache_remove(sharedName, key, size)
 

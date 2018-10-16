@@ -24,7 +24,7 @@ proc write_resp*(ctx: Context, status_code: int, status_line: cstring, content_t
 proc write_resp_l*(ctx: Context, status_code: int, status_line: cstring, status_line_len: csize, content_type: cstring, content_type_len: csize, resp_content: cstring, resp_content_len: csize)
 proc set_resp_var*(ctx: Context, resp_content: cstring, resp_len: csize)
 
-##  Shared Memory and Cache Scope
+# Shared Memory and Cache Scope
 proc shmtx_trylock*(shared_mem: pointer): pointer
 proc shmtx_lock*(shared_mem: pointer)
 proc shmtx_unlock*(shared_mem: pointer)
