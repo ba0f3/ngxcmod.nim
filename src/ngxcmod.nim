@@ -2,7 +2,7 @@
 ##
 ## For low level wrapper, please import ``ngxcmod/raw``
 
-import ngxcmod/raw
+import macros, ngxcmod/raw
 export Context
 
 
@@ -23,21 +23,21 @@ type
   Callback = proc(ctx: Context) ## proc-types for `init` and `exit` callbacks
 
 
-template initHook*(p: Callback) =
-  ## helper for create `ngx_http_c_func_init` proc, called when NGINX starts,
-  ## or you can implement it yourself in your module
-  ##
-  ## .. code-block:: nim
-  ##   proc ngx_http_c_func_init(ctx: Context) {.exportc.} =
-  ##     # your code here
-  proc ngx_http_c_func_init(ctx: Context) {.exportc.} =
-    p(ctx)
+macro init*(x: varargs[untyped]): untyped =
+  ## Proc has ``init`` pragma will get called when Nginx starts, can use only once in a module
+  var pdef = x[0]
+  if pdef[4].kind == nnkEmpty:
+    pdef[4] = newNimNode(nnkPragma)
+  pdef[4].add(newNimNode(nnkExprColonExpr).add(ident("exportc"), newStrLitNode("ngx_http_c_func_init")))
+  pdef
 
-template exitHook*(p: Callback) =
-  ## same as `initHook`, but it creates `ngx_http_c_func_exit` proc instead
-
-  proc ngx_http_c_func_exit(ctx: Context) {.exportc.} =
-    p(ctx)
+macro exit*(x: varargs[untyped]): untyped =
+  ## Proc has ``init`` pragma will get called when Nginx shutdowns, can use only once in a module
+  var pdef = x[0]
+  if pdef[4].kind == nnkEmpty:
+    pdef[4] = newNimNode(nnkPragma)
+  pdef[4].add(newNimNode(nnkExprColonExpr).add(ident("exportc"), newStrLitNode("ngx_http_c_func_exit")))
+  pdef
 
 template log*(ctx: Context, level: LOG_LEVEL, msg: string) =
   case level
@@ -73,4 +73,3 @@ template cacheNew(sharedMem: pointer, key: string, size: int): pointer =
 
 template cacheRemove(sharedMem: pointer, key: string, size: int): pointer =
   apit.cache_remove(sharedName, key, size)
-

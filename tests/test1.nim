@@ -1,13 +1,10 @@
 import ngxcmod, strutils
 
-proc init(ctx: Context) =
+proc init(ctx: Context) {.init.} =
   ctx.log(INFO, "hello from Nim")
 
-proc exit(ctx: Context) =
+proc exit(ctx: Context) {.exit.} =
   ctx.log(WARN, "goodbye, from Nim w/ <3")
-
-initHook(init)
-exitHook(exit)
 
 
 proc hello(ctx: Context) {.exportc.} =
