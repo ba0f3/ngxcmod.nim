@@ -62,7 +62,7 @@ template getQueryParam*(ctx: Context, key: string): string =
   ## Returns the values associated with the given key
   $raw.get_query_param(ctx, key)
 
-template response*(ctx: Context, statusCode: int, statusLine: string, contentType: string, content: string, contentLen: int) =
+template response*(ctx: Context, statusCode: int, statusLine: string, contentType: string, content: string) =
   ## Write response to client
-  raw.write_resp(ctx, statusCode, statusLine, contentType, content, contentLen)
+  raw.write_resp(ctx, statusCode, statusLine, contentType, content, content.len)
 

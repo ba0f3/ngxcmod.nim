@@ -15,6 +15,5 @@ proc hello(ctx: Context) {.exportc.} =
   let
     name = ctx.getQueryParam("name")
     message = "hello $#, greeting from Nim" % name
-  echo message
-  ctx.response(200, "200 OK", CONTENT_TYPE_PLAINTEXT, message, message.len)
+  ctx.response(200, "200 OK", CONTENT_TYPE_PLAINTEXT, message)
 
