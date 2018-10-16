@@ -40,6 +40,7 @@ macro exit*(x: varargs[untyped]): untyped =
   pdef
 
 template log*(ctx: Context, level: LOG_LEVEL, msg: string) =
+  ## sends log message to Nginx
   case level
   of DEBUG:
     log_debug(ctx, msg)
@@ -57,6 +58,20 @@ template getHeader*(ctx: Context, key: string): string =
 template getQueryParam*(ctx: Context, key: string): string =
   ## Returns the values associated with the given key
   $raw.get_query_param(ctx, key)
+
+template getArgs(ctx: Context): string = $ctx.req_args
+
+proc getBody*(ctx: Context): tuple[p: ptr char, size: int] =
+  ## Get request body, and its length
+  (ctx.req_body, ctx.req_body_len)
+
+proc getBodyAsStr*(ctx: Context): string =
+  ## Get request body, ctx.req_body may not terminated with NULL, use it as yourown risk
+  let body = cast[cstring](ctx.req_body)
+  $body
+
+template getSharedMem*(ctx: Context): pointer = ctx.shared_mem
+  ## returns pointer to shared memory
 
 template response*(ctx: Context, statusCode: int, statusLine: string, contentType: string, content: string) =
   ## Write response to client
