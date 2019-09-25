@@ -1,8 +1,12 @@
 # ngxcmod
-This module contains some high level wrapper to build Nginx module with ``nginx-c-function``
+This module contains some high level wrapper to build Nginx module with `nginx-c-function`
 
 For low level wrapper, please import ``ngxcmod/raw``
 
+
+## Requirements
+* NGINX
+* [nginx-link-function](https://github.com/Taymindis/nginx-link-function)
 
 ## Usage
 
