@@ -20,7 +20,7 @@ type
     WARN
     ERR
 
-  Callback = proc(ctx: Context) ## proc-types for `init` and `exit` callbacks
+  Callback* = proc(ctx: Context) ## proc-types for `init` and `exit` callbacks
 
 
 macro init*(x: varargs[untyped]): untyped =
@@ -28,7 +28,7 @@ macro init*(x: varargs[untyped]): untyped =
   var pdef = x[0]
   if pdef[4].kind == nnkEmpty:
     pdef[4] = newNimNode(nnkPragma)
-  pdef[4].add(newNimNode(nnkExprColonExpr).add(ident("exportc"), newStrLitNode("ngx_http_c_func_init")))
+  pdef[4].add(newNimNode(nnkExprColonExpr).add(ident("exportc"), newStrLitNode("ngx_link_func_init")))
   pdef
 
 macro exit*(x: varargs[untyped]): untyped =
@@ -36,7 +36,7 @@ macro exit*(x: varargs[untyped]): untyped =
   var pdef = x[0]
   if pdef[4].kind == nnkEmpty:
     pdef[4] = newNimNode(nnkPragma)
-  pdef[4].add(newNimNode(nnkExprColonExpr).add(ident("exportc"), newStrLitNode("ngx_http_c_func_exit")))
+  pdef[4].add(newNimNode(nnkExprColonExpr).add(ident("exportc"), newStrLitNode("ngx_link_func_exit")))
   pdef
 
 template log*(ctx: Context, level: LOG_LEVEL, msg: string) =
@@ -59,32 +59,27 @@ template getQueryParam*(ctx: Context, key: string): string =
   ## Returns the values associated with the given key
   $raw.get_query_param(ctx, key)
 
-template getArgs(ctx: Context): string = $ctx.req_args
+template getArgs*(ctx: Context): string = $ctx.req_args
 
-proc getBody*(ctx: Context): tuple[p: ptr char, size: int] =
+proc getBody*(ctx: Context): tuple[p: string, size: int] =
   ## Get request body, and its length
-  (ctx.req_body, ctx.req_body_len)
+  ($cast[cstring](ctx.req_body), ctx.req_body_len)
 
 proc getBodyAsStr*(ctx: Context): string =
   ## Get request body, ctx.req_body may not terminated with NULL, use it as yourown risk
-  let body = cast[cstring](ctx.req_body)
-  $body
+  $cast[cstring](ctx.req_body)
 
 template getSharedMem*(ctx: Context): pointer = ctx.shared_mem
   ## returns pointer to shared memory
 
-template response*(ctx: Context, statusCode: int, statusLine: string, contentType: string, content: string) =
+template response*(ctx: Context, statusCode: uint, statusLine: string, contentType: string, content: string) =
   ## Write response to client
   raw.write_resp(ctx, statusCode, statusLine, contentType, content, content.len)
 
-template cacheGet(sharedMem: pointer, key: string): pointer =
-  apit.cache_get(sharedName, key)
+template cacheGet*(sharedMem: pointer, key: string): pointer = cache_get(sharedName, key)
 
-template cachePut(sharedMem: pointer, key: string, value: pointer): pointer =
-  apit.cache_put(sharedName, key, value)
+template cachePut*(sharedMem: pointer, key: string, value: pointer): pointer = cache_put(sharedName, key, value)
 
-template cacheNew(sharedMem: pointer, key: string, size: int): pointer =
-  apit.cache_new(sharedName, key, size)
+template cacheNew*(sharedMem: pointer, key: string, size: int): pointer = cache_new(sharedName, key, size)
 
-template cacheRemove(sharedMem: pointer, key: string, size: int): pointer =
-  apit.cache_remove(sharedName, key, size)
+template cacheRemove*(sharedMem: pointer, key: string, size: int): pointer = cache_remove(sharedName, key, size)
