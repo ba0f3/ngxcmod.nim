@@ -5,7 +5,6 @@
 import macros, ngxcmod/raw
 export Context
 
-
 const
   CONTENT_TYPE_PLAINTEXT* = "text/plain"
   CONTENT_TYPE_HTML* = "text/html; charset=utf-8"
@@ -15,13 +14,7 @@ const
 
 type
   LOG_LEVEL* = enum
-    DEBUG
-    INFO
-    WARN
-    ERR
-
-  Callback* = proc(ctx: Context) ## proc-types for `init` and `exit` callbacks
-
+    DEBUG, INFO, WARN, ERR
 
 macro init*(x: varargs[untyped]): untyped =
   ## Proc has ``init`` pragma will get called when Nginx starts, can use only once in a module
@@ -55,26 +48,24 @@ template getHeader*(ctx: Context, key: string): string =
   ## Returns the values associated with the given key
   $raw.get_header(ctx, key)
 
-template getQueryParam*(ctx: Context, key: string): string =
+template getQueryParam*(ctx: Context, key: string): string = $raw.get_query_param(ctx, key)
   ## Returns the values associated with the given key
-  $raw.get_query_param(ctx, key)
 
 template getArgs*(ctx: Context): string = $ctx.req_args
+  ## get the uri args
 
-proc getBody*(ctx: Context): tuple[p: string, size: int] =
+template getBody*(ctx: Context): tuple[p: string, size: int] =  ($cast[cstring](ctx.req_body), ctx.req_body_len)
   ## Get request body, and its length
-  ($cast[cstring](ctx.req_body), ctx.req_body_len)
 
-proc getBodyAsStr*(ctx: Context): string =
+template getBodyAsStr*(ctx: Context): string = $cast[cstring](ctx.req_body)
   ## Get request body, ctx.req_body may not terminated with NULL, use it as yourown risk
-  $cast[cstring](ctx.req_body)
 
 template getSharedMem*(ctx: Context): pointer = ctx.shared_mem
   ## returns pointer to shared memory
 
 template response*(ctx: Context, statusCode: uint, statusLine: string, contentType: string, content: string) =
   ## Write response to client
-  raw.write_resp(ctx, statusCode, statusLine, contentType, content, content.len)
+  write_resp(ctx, statusCode, statusLine, contentType, content, content.len)
 
 template cacheGet*(sharedMem: pointer, key: string): pointer = cache_get(sharedName, key)
 
