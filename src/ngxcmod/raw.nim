@@ -8,8 +8,23 @@ type
     pl: pointer
     log: pointer
 
+  ContextCycle* {.pure.} = ref object
+    shared_mem*: pointer ##  internal
+    has_error*: int
+    cycle: pointer
+    svr_cf: pointer
+    pl: pointer
+    log: pointer
+
+
 
 {.push importc: "ngx_link_func_$1", cdecl.}
+proc cyc_log_get_prop*(ctx: ContextCycle, key: cstring, keylen: csize): cstring
+proc cyc_log_debug*(ctx: ContextCycle, msg: cstring)
+proc cyc_log_info*(ctx: ContextCycle, msg: cstring)
+proc cyc_log_warn*(ctx: ContextCycle, msg: cstring)
+proc cyc_log_err*(ctx: ContextCycle, msg: cstring)
+
 proc log_debug*(ctx: Context, msg: cstring)
 proc log_info*(ctx: Context, msg: cstring)
 proc log_warn*(ctx: Context, msg: cstring)
