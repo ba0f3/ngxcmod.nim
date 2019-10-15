@@ -21,8 +21,7 @@ macro init*(x: varargs[untyped]): untyped =
   var pdef = x[0]
   if pdef[4].kind == nnkEmpty:
     pdef[4] = newNimNode(nnkPragma)
-  pdef[4].add(newNimNode(nnkExprColonExpr)
-                         .add(ident("exportc"), newStrLitNode("ngx_link_func_init_cycle")))
+  pdef[4].add(newNimNode(nnkExprColonExpr).add(ident("exportc"), newStrLitNode("ngx_link_func_init_cycle")))
   pdef
 
 macro exit*(x: varargs[untyped]): untyped =
