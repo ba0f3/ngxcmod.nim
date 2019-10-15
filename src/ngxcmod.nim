@@ -3,7 +3,7 @@
 ## For low level wrapper, please import ``ngxcmod/raw``
 
 import macros, ngxcmod/raw
-export Context
+export Context, ContextCycle
 
 const
   CONTENT_TYPE_PLAINTEXT* = "text/plain"
@@ -21,7 +21,8 @@ macro init*(x: varargs[untyped]): untyped =
   var pdef = x[0]
   if pdef[4].kind == nnkEmpty:
     pdef[4] = newNimNode(nnkPragma)
-  pdef[4].add(newNimNode(nnkExprColonExpr).add(ident("exportc"), newStrLitNode("ngx_link_func_init")))
+  pdef[4].add(newNimNode(nnkExprColonExpr)
+                         .add(ident("exportc"), newStrLitNode("ngx_link_func_init_cycle")))
   pdef
 
 macro exit*(x: varargs[untyped]): untyped =
@@ -29,7 +30,7 @@ macro exit*(x: varargs[untyped]): untyped =
   var pdef = x[0]
   if pdef[4].kind == nnkEmpty:
     pdef[4] = newNimNode(nnkPragma)
-  pdef[4].add(newNimNode(nnkExprColonExpr).add(ident("exportc"), newStrLitNode("ngx_link_func_exit")))
+  pdef[4].add(newNimNode(nnkExprColonExpr).add(ident("exportc"), newStrLitNode("ngx_link_func_exit_cycle")))
   pdef
 
 template log*(ctx: Context, level: LOG_LEVEL, msg: string) =
@@ -43,6 +44,18 @@ template log*(ctx: Context, level: LOG_LEVEL, msg: string) =
     log_warn(ctx, msg)
   of ERR:
     log_err(ctx, msg)
+
+template cyc_log*(ctx: ContextCycle, level: LOG_LEVEL, msg: string) =
+  ## sends log message to Nginx
+  case level
+  of DEBUG:
+    cyc_log_debug(ctx, msg)
+  of INFO:
+    cyc_log_info(ctx, msg)
+  of WARN:
+    cyc_log_warn(ctx, msg)
+  of ERR:
+    cyc_log_err(ctx, msg)
 
 template getHeader*(ctx: Context, key: string): string =
   ## Returns the values associated with the given key
